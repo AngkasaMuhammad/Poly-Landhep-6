@@ -37,7 +37,7 @@ import{
 
 import{
 	WgslReflect,
-}from '../WGSL to meshattr/wgsl_reflect.module.js'
+}from 'https://cdn.jsdelivr.net/npm/wgsl_reflect@1.5.0/wgsl_reflect.module.js' //'../WGSL to meshattr/wgsl_reflect.module.js'
 
 
 
