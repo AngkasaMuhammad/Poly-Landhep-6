@@ -241,13 +241,45 @@ export const updmatrix = (
 		striparr.push(fcurvedict)
 	}
 	
-	//lih(striparr)
-	//throw striparr
 	//target
 	//local*ani*local*ani*local*ani*.....*inv
 	const targetcount = animattargetarr(...timearr)
 	let targetmap = new Map()
 	
+	//store target map
+	for(let i = 0;i < targetcount;i++){
+		let [
+			show,
+			strip,
+			mesh,
+			index,
+		] = new Int32Array(mem0.buffer,i*4*4,4,)
+		
+		if(!show){continue}
+		mesh = wasmstrarr[mesh]
+		
+		const stobonedict = stost[mesh][index]
+		const restarm = armdict[meshinfo[mesh].arm]
+		
+		
+		//target set
+		targetmap.set(stobonedict,restarm,)
+	}
+	
+	//reset jadi inpar_mat
+	for(let [stobonedict,restarm,] of targetmap){
+		for(const {name:k} of restarm.bonearr){
+			const bone = stobonedict[k] //target
+			const {
+				par,
+				inpar_mat,
+				inv_inarm_mat,
+			} = restarm.bonedict[k]
+			m4.copy(inpar_mat,bone,)
+		}
+	}
+	
+	//bone
 	//local*ani
 	for(let i = 0;i < targetcount;i++){
 		let [
@@ -263,8 +295,8 @@ export const updmatrix = (
 		const stobonedict = stost[mesh][index]
 		const restarm = armdict[meshinfo[mesh].arm]
 		
+		const fcurvedict = striparr[strip]
 		for(const {name:k} of restarm.bonearr){
-			const fcurvedict = striparr[strip]
 			if(!(k in fcurvedict)){continue}
 			const fcurve = fcurvedict[k]
 			const bone = stobonedict[k] //target
@@ -279,25 +311,14 @@ export const updmatrix = (
 		}
 	}
 	
+	//hitung parent
 	//.....*local*ani*local*ani*local*ani
-	for(let i = 0;i < targetcount;i++){
-		let [
-			show,
-			strip,
-			mesh,
-			index,
-		] = new Int32Array(mem0.buffer,i*4*4,4,)
-		
-		if(!show){continue}
-		mesh = wasmstrarr[mesh]
-		
-		const stobonedict = stost[mesh][index]
-		const restarm = armdict[meshinfo[mesh].arm]
+	for(let [stobonedict,restarm,] of targetmap){
 		
 		//anipar*inpar_mat*fcurve
+		//const fcurvedict = striparr[strip]
 		for(const {name:k} of restarm.bonearr){
-			const fcurvedict = striparr[strip]
-			if(!(k in fcurvedict)){continue}
+			//if(!(k in fcurvedict)){continue}
 			const bone = stobonedict[k] //target
 			const {
 				par,
@@ -308,6 +329,8 @@ export const updmatrix = (
 			const anipar = par ?stobonedict[par.name] :matide //parent loc_ani
 			m4.mul(anipar,bone,bone,)
 			//store ani ke storage, trus storage dipakai lagi untuk hitung parent
+			
+			//camera
 			;(
 				_camsetup0.mode.constructor  === Object
 				&& _camsetup0.mode.src === bone
@@ -315,6 +338,7 @@ export const updmatrix = (
 				_camsetup0.mode.src, //aku set dari ui.js berupa stost[mesh][instance][bone]
 				_camsetup0.mode.dst, //matrix global di dalam ui.js
 			)
+			
 			//audio
 			if(stripmap.has(bone)){
 				const striparr = stripmap.get(bone)
@@ -328,15 +352,11 @@ export const updmatrix = (
 				}
 			}
 		}
-		
-		
-		//target set
-		targetmap.set(stobonedict,restarm,)
 	}
 	
-	
+	//hitung inverter
 	//mat * inverter
-	for(let [stobonedict,restarm,] of targetmap){//sampe sini, edit inverter
+	for(let [stobonedict,restarm,] of targetmap){
 		for(const {name:k} of restarm.bonearr){
 			const bone = stobonedict[k] //target
 			const {
