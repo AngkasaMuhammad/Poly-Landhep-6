@@ -11,29 +11,14 @@ import {
 	tsvToObj,
 	lihat as lih,
 	padTo4,
-	frameval,
 	_camsetup0,
-	getAvgAxisSize,
 }from './helper.js'
 
 import{
-	//getstrval,
 	enconame,
-	anivecstriparr,
-	animatstriparr,
-	animattargetarr,
-	anivecdict,
-	animatdict,
-	wasmstrarr,
-	mem0,
-	updani,
+	updvertex,
+	updmatrix,
 }from './ani.js'
-
-
-import{
-	stripmap,
-}from './audio.js'
-
 
 import{
 	WgslReflect,
@@ -50,8 +35,8 @@ lih('render0')
 export const persp = m4.identity()
 export const cammat = m4.identity()
 export const cammic = m4.identity()
-const matide = m4.identity()
-const matempty = m4.create()
+//const matide = m4.identity()
+//const matempty = m4.create()
 
 const texusage = 
 	GPUTextureUsage.RENDER_ATTACHMENT
@@ -200,6 +185,7 @@ dv.queue.writeBuffer(vbuf,0,varrbuf,)
 //vec keyframe time
 let ivstart = document.querySelector('#ivstart').dataset.value
 ivstart = +meshinfo[ivstart].voff
+/*
 const fveckft = kf=>kf.frame
 const updvertex = timearr=>{
 	const stripcount = anivecstriparr(...timearr)
@@ -227,8 +213,9 @@ const updvertex = timearr=>{
 	}
 	
 	//dv.queue.writeBuffer(vbuf,0,varrbuf,) //ASLI
-	dv.queue.writeBuffer(vbuf,ivstart,varrbuf,ivstart,) //sampe sini, update vertex hanya yang instance
+	dv.queue.writeBuffer(vbuf,ivstart,varrbuf,ivstart,)
 }
+*/
 
 
 
@@ -393,10 +380,11 @@ for(const k0 in stost){
 lih(stost)
 
 
+/*
 //mat keyframe time
 const micbone = m4.create()
-const fmatkft = fveckft
-const updmatrix = timearr=>{
+const fmatkft = kf=>kf.frame
+const updmatrix = timearr=>{ //sampe sini, pindah ke ani.js
 	
 	//strip
 	const striparr = []
@@ -421,6 +409,7 @@ const updmatrix = timearr=>{
 	}
 	
 	//lih(striparr)
+	//throw striparr
 	//target
 	const targetcount = animattargetarr(...timearr)
 	for(let i = 0;i < targetcount;i++){
@@ -486,6 +475,7 @@ const updmatrix = timearr=>{
 		}
 	}
 }
+*/
 
 
 
@@ -805,10 +795,21 @@ export const draw = async (
 	const timearr = [t,dt,env_t,env_dt,]
 	
 	//vertex
-	updvertex(timearr)
+	updvertex(
+		timearr,
+		meshinfo,
+		dv,
+		vbuf,ivstart,varrbuf,
+	)
 	//matrix
-	updmatrix(timearr)
-	updani(env_t)
+	updmatrix(
+		timearr,
+		stost,
+		armdict,
+		meshinfo,
+		cammic,
+	)
+	//updani(env_t)
 	_camsetup0.activecam.fcam(persp)
 	uniset('cam',cammat,)
 	
